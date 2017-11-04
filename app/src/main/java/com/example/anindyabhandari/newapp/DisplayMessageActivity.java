@@ -3,11 +3,13 @@ package com.example.anindyabhandari.newapp;
 import android.content.Intent;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
+import android.security.keystore.KeyProtection;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.io.FileInputStream;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -45,17 +47,23 @@ public class DisplayMessageActivity extends AppCompatActivity {
                     //.build();
 
             //keyGenerator.init(keyGenParameterSpec);
-            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());//"AndroidKeyStore");
             keyStore.load(null);
-            //char[] pa={'H','I'};
-            //KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(pa);
+            char[] password={'p','a','s','s'};
+            //try (FileInputStream fis = new FileInputStream("keyStoreName")) {
+                //keyStore.load(fis, password);
+            //}
+            keyStore.load(null,password);
+            KeyStore.ProtectionParameter pp = new KeyStore.PasswordProtection(password);
+            //KeyStore.PasswordProtection pp = new KeyStore.PasswordProtection(password);
+            //KeyStore.PasswordProtection pp = new KeyProtection(password);
             SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
             byte[] salt = new byte[32];
             sr.nextBytes(salt);
             char[] pass = {'H','E','L','L','O'};
             final SecretKey secretKey = generateKey(pass,salt);//keyGenerator.generateKey();
-            //KeyStore.SecretKeyEntry sk = new KeyStore.SecretKeyEntry(secretKey);
-            //keyStore.setEntry(alias, sk, null);
+            KeyStore.SecretKeyEntry sk = new KeyStore.SecretKeyEntry(secretKey);
+            keyStore.setEntry(alias, sk, pp);
             final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
@@ -64,9 +72,9 @@ public class DisplayMessageActivity extends AppCompatActivity {
             byte[] encryption = cipher.doFinal(message.getBytes("UTF-8"));
             String str = new String(encryption, "UTF-8");
 
-            //final KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, null);
+            final KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, pp);
 
-            //final SecretKey secretKey2 = secretKeyEntry.getSecretKey();
+            final SecretKey secretKey2 = secretKeyEntry.getSecretKey();
             //stop here
             // Capture the layout's TextView and set the string as its text
             TextView textView = (TextView) findViewById(R.id.textView2);
@@ -74,7 +82,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
             textView.setText(str);
             final Cipher cipher2 = Cipher.getInstance("AES/GCM/NoPadding");
             final GCMParameterSpec spec = new GCMParameterSpec(128, iv);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey2, spec);
             final byte[] decodedData = cipher.doFinal(encryption);
             final String unencrypted = new String(decodedData, "UTF-8");
             TextView textView2 = (TextView) findViewById(R.id.textView);
@@ -85,7 +93,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
         {
             TextView textView = (TextView) findViewById(R.id.textView);
             //textView.setText(message);
-            textView.setText("Something failed :(");
+            textView.setText(e.getMessage());
             return;
         }
     }
