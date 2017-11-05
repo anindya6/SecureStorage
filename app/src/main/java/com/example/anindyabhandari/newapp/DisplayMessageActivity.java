@@ -51,15 +51,18 @@ public class DisplayMessageActivity extends AppCompatActivity {
                     //.build();
 
             //keyGenerator.init(keyGenParameterSpec);
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");//KeyStore.getDefaultType());
+
             char[] password={'p','a','s','s'};
+            /*
             try (FileInputStream fis = new FileInputStream("commstore")) {
                 keyStore.load(fis, password);
             }
             catch(Exception e)
             {
                 keyStore.load(null, password);
-            }
+            }*/
+            keyStore.load(null);//,password);
             KeyStore.ProtectionParameter pp = new KeyStore.PasswordProtection(password);
             //KeyStore.PasswordProtection pp = new KeyStore.PasswordProtection(password);
             //KeyStore.PasswordProtection pp = new KeyProtection(password);
@@ -70,6 +73,13 @@ public class DisplayMessageActivity extends AppCompatActivity {
             final SecretKey secretKey = generateKey(pass,salt);//keyGenerator.generateKey();
             KeyStore.SecretKeyEntry sk = new KeyStore.SecretKeyEntry(secretKey);
             keyStore.setEntry(alias, sk, pp);
+            //keyStore.setEntry(
+                    //alias,
+                    //new KeyStore.SecretKeyEntry(secretKey),null);
+                    //new KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                            //.setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                            //.setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                            //.build());
             final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
@@ -79,8 +89,9 @@ public class DisplayMessageActivity extends AppCompatActivity {
             byte[] encryption = cipher.doFinal(message.getBytes("UTF-8"));
             String str = new String(encryption, "UTF-8");
             final KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, pp);
-
+            //final KeyStore.Entry entry = keyStore.getEntry(alias,null);
             final SecretKey secretKey2 = secretKeyEntry.getSecretKey();
+            //SecretKey secretKey2 = (SecretKey) keyStore.getKey(alias, null);
             //stop here
             // Capture the layout's TextView and set the string as its text
             TextView textView = (TextView) findViewById(R.id.textView2);
@@ -93,7 +104,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
             final String unencrypted = new String(decodedData, "UTF-8");
             TextView textView2 = (TextView) findViewById(R.id.textView);
             //textView.setText(message);
-            textView2.setText(unencrypted);
+            textView2.setText("Decrypted (same instance): "+ unencrypted);
             try (FileOutputStream fos = new FileOutputStream("commstore")) {
                 keyStore.store(fos, password);
             }

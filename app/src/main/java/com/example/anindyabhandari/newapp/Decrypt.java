@@ -24,10 +24,10 @@ public class Decrypt extends AppCompatActivity {
         String ct = stuff[1];//intent.getStringExtra("ciphertext");
         TextView textView0 = (TextView) findViewById(R.id.textView5);
         //textView.setText(message);
-        textView0.setText(iv);
+        textView0.setText("IV is: "+iv);
         TextView textView1 = (TextView) findViewById(R.id.textView6);
         //textView.setText(message);
-        textView1.setText(ct);
+        textView1.setText("Ciphertext: "+ct);
         //adding this part, feel free to change
         String alias = "Hello";
         try {
@@ -66,7 +66,7 @@ public class Decrypt extends AppCompatActivity {
         catch (Exception e) {
             TextView textView = (TextView) findViewById(R.id.textView3);
             //textView.setText(message);
-            textView.setText(e.getMessage());
+            textView.setText("Errors: "+e.getMessage());
             return;
         }
     }
