@@ -7,9 +7,12 @@ import android.security.keystore.KeyProtection;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -27,6 +30,7 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 
 public class DisplayMessageActivity extends AppCompatActivity {
+    public static final String EXTRA_MESSAGE = "something.somewhere";//new String [2];
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,13 +51,15 @@ public class DisplayMessageActivity extends AppCompatActivity {
                     //.build();
 
             //keyGenerator.init(keyGenParameterSpec);
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());//"AndroidKeyStore");
-            keyStore.load(null);
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             char[] password={'p','a','s','s'};
-            //try (FileInputStream fis = new FileInputStream("keyStoreName")) {
-                //keyStore.load(fis, password);
-            //}
-            keyStore.load(null,password);
+            try (FileInputStream fis = new FileInputStream("commstore")) {
+                keyStore.load(fis, password);
+            }
+            catch(Exception e)
+            {
+                keyStore.load(null, password);
+            }
             KeyStore.ProtectionParameter pp = new KeyStore.PasswordProtection(password);
             //KeyStore.PasswordProtection pp = new KeyStore.PasswordProtection(password);
             //KeyStore.PasswordProtection pp = new KeyProtection(password);
@@ -68,10 +74,10 @@ public class DisplayMessageActivity extends AppCompatActivity {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
             byte[] iv = cipher.getIV();
-
+            TextView textView0 = (TextView) findViewById(R.id.textView4);
+            textView0.setText(iv.toString());
             byte[] encryption = cipher.doFinal(message.getBytes("UTF-8"));
             String str = new String(encryption, "UTF-8");
-
             final KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, pp);
 
             final SecretKey secretKey2 = secretKeyEntry.getSecretKey();
@@ -82,12 +88,21 @@ public class DisplayMessageActivity extends AppCompatActivity {
             textView.setText(str);
             final Cipher cipher2 = Cipher.getInstance("AES/GCM/NoPadding");
             final GCMParameterSpec spec = new GCMParameterSpec(128, iv);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey2, spec);
-            final byte[] decodedData = cipher.doFinal(encryption);
+            cipher2.init(Cipher.DECRYPT_MODE, secretKey2, spec);
+            final byte[] decodedData = cipher2.doFinal(encryption);
             final String unencrypted = new String(decodedData, "UTF-8");
             TextView textView2 = (TextView) findViewById(R.id.textView);
             //textView.setText(message);
             textView2.setText(unencrypted);
+            try (FileOutputStream fos = new FileOutputStream("commstore")) {
+                keyStore.store(fos, password);
+            }
+            catch(Exception e2)
+            {
+                TextView textView3 = (TextView) findViewById(R.id.textView7);
+                //textView.setText(message);
+                textView3.setText("Errors: " + e2.getMessage());
+            }
         }
         catch (Exception e)
         {
@@ -111,5 +126,15 @@ public class DisplayMessageActivity extends AppCompatActivity {
         KeySpec keySpec = new PBEKeySpec(passphraseOrPin, salt, iterations, outputKeyLength);
         SecretKey secretKey = secretKeyFactory.generateSecret(keySpec);
         return secretKey;
+    }
+    public void sendMessage(View view) {
+        Intent intent = new Intent(this, Decrypt.class);
+        TextView textView = (TextView) findViewById(R.id.textView2);
+        String message = textView.getText().toString();
+        TextView textView2 = (TextView) findViewById(R.id.textView4);
+        String message2 = textView2.getText().toString();
+        //intent.putExtra(, new String [] {message, message2});
+        intent.putExtra("IVCT",new String [] {message2,message});
+        startActivity(intent);
     }
 }
