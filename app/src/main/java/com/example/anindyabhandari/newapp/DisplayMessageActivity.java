@@ -28,9 +28,12 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class DisplayMessageActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "something.somewhere";//new String [2];
+    public byte [] iv_f;
+    public byte [] ct_pass;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,26 +74,43 @@ public class DisplayMessageActivity extends AppCompatActivity {
             sr.nextBytes(salt);
             char[] pass = {'H','E','L','L','O'};
             final SecretKey secretKey = generateKey(pass,salt);//keyGenerator.generateKey();
-            KeyStore.SecretKeyEntry sk = new KeyStore.SecretKeyEntry(secretKey);
-            keyStore.setEntry(alias, sk, pp);
-            //keyStore.setEntry(
-                    //alias,
-                    //new KeyStore.SecretKeyEntry(secretKey),null);
-                    //new KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-                            //.setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                            //.setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                            //.build());
+            //try {
+                byte[] temp = secretKey.getEncoded();
+                SecretKey key2 = new SecretKeySpec(temp, 0, temp.length, "AES");
+                //t=secretKey;
+                KeyStore.SecretKeyEntry sk = new KeyStore.SecretKeyEntry(key2);
+            //}
+            //catch(Exception e){Log.e("YOUR_APP_LOG_TAG_1", "I got an error", e);}
+            //try{
+                //keyStore.setEntry(alias, sk, KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT).build());//pp);
+                keyStore.setEntry(
+                        alias,sk,
+                        //new KeyStore.SecretKeyEntry(secretKey),//null);
+                        new KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                                .build());
+            //}
+            //catch(Exception e){Log.e("YOUR_APP_LOG_TAG_2", "I got an error", e);}
             final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            cipher.init(Cipher.ENCRYPT_MODE, key2);
 
             byte[] iv = cipher.getIV();
+            iv_f=iv;
             TextView textView0 = (TextView) findViewById(R.id.textView4);
             textView0.setText(iv.toString());
             byte[] encryption = cipher.doFinal(message.getBytes("UTF-8"));
+            ct_pass=encryption;
             String str = new String(encryption, "UTF-8");
-            final KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, pp);
-            //final KeyStore.Entry entry = keyStore.getEntry(alias,null);
-            final SecretKey secretKey2 = secretKeyEntry.getSecretKey();
+            //try {
+                final KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, null);//pp);
+                //final KeyStore.Entry entry = keyStore.getEntry(alias,null);
+                final SecretKey secretKey2 = secretKeyEntry.getSecretKey();
+            //}
+            //catch(Exception e)
+            //{
+                //final SecretKey secretKey2 = key2;
+            //}
             //SecretKey secretKey2 = (SecretKey) keyStore.getKey(alias, null);
             //stop here
             // Capture the layout's TextView and set the string as its text
@@ -146,6 +166,8 @@ public class DisplayMessageActivity extends AppCompatActivity {
         String message2 = textView2.getText().toString();
         //intent.putExtra(, new String [] {message, message2});
         intent.putExtra("IVCT",new String [] {message2,message});
+        intent.putExtra("IV",iv_f);
+        intent.putExtra("CT",ct_pass);
         startActivity(intent);
     }
 }
