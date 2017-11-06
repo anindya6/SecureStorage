@@ -66,6 +66,18 @@ public class DisplayMessageActivity extends AppCompatActivity {
                 keyStore.load(null, password);
             }*/
             keyStore.load(null);//,password);
+            try{
+                final KeyStore.SecretKeyEntry secretKeyEntry2 = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, null);//pp);
+                //final KeyStore.Entry entry = keyStore.getEntry(alias,null);
+                final SecretKey secretKey3 = secretKeyEntry2.getSecretKey();
+                TextView textViewX = (TextView) findViewById(R.id.textView8);
+                textViewX.setText("The key still exists");
+            }
+            catch(Exception e)
+            {
+                TextView textViewX = (TextView) findViewById(R.id.textView8);
+                textViewX.setText("The key did not exist");
+            }
             KeyStore.ProtectionParameter pp = new KeyStore.PasswordProtection(password);
             //KeyStore.PasswordProtection pp = new KeyStore.PasswordProtection(password);
             //KeyStore.PasswordProtection pp = new KeyProtection(password);
