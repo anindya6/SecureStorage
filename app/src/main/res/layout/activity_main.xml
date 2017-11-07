@@ -16,7 +16,8 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintHorizontal_bias="0.502" />
+        app:layout_constraintHorizontal_bias="0.627"
+        app:layout_constraintBottom_toTopOf="@+id/button" />
 
     <Button
         android:id="@+id/button"
@@ -24,8 +25,22 @@
         android:layout_height="wrap_content"
         android:onClick="sendMessage"
         android:text="@string/button_send"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editText"
+        app:layout_constraintHorizontal_bias="0.577"
+        app:layout_constraintBottom_toTopOf="@+id/button3" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="187dp"
+        android:layout_height="53dp"
+        android:onClick="onClick"
+        android:text="@string/button_goto"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.68"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button" />
 
 </android.support.constraint.ConstraintLayout>

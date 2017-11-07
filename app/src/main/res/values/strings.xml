@@ -2,4 +2,6 @@
     <string name="app_name">NewApp</string>
     <string name="edit_message">Enter A Message</string>
     <string name="button_send">Send</string>
+    <string name="button_submit">Submit</string>
+    <string name="button_goto">Go To Login</string>
 </resources>

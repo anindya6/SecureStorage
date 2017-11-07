@@ -22,4 +22,11 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
     }
+    public void onClick(View view) {
+        Intent intent = new Intent(this, PasswordDialog.class);
+        //EditText editText = (EditText) findViewById(R.id.editText);
+        //String message = editText.getText().toString();
+        //intent.putExtra(EXTRA_MESSAGE, message);
+        startActivity(intent);
+    }
 }
